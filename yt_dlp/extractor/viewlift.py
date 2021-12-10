@@ -20,7 +20,7 @@ class ViewLiftBaseIE(InfoExtractor):
         'ftfnext': 'lax',
         'funnyforfree': 'snagfilms',
         'hoichoi': 'hoichoitv',
-        'chorki' : 'prothomalo'
+        'chorki' : 'prothomalo',
         'kiddovid': 'snagfilms',
         'laxsportsnetwork': 'lax',
         'legapallacanestro': 'lnp',
