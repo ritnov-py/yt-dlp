@@ -21,7 +21,7 @@ class ViewLiftBaseIE(InfoExtractor):
         'funnyforfree': 'snagfilms',
         'hoichoi': 'hoichoitv',
         'chorki' : 'prothomalo',
-        'aha' : 'aha'
+        'aha' : 'aha',
         'kiddovid': 'snagfilms',
         'laxsportsnetwork': 'lax',
         'legapallacanestro': 'lnp',
