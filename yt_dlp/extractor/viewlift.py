@@ -168,7 +168,7 @@ class ViewLiftEmbedIE(ViewLiftBaseIE):
 class ViewLiftIE(ViewLiftBaseIE):
     IE_NAME = 'viewlift'
     _API_BASE = 'https://prod-api-cached-2.viewlift.com/'
-    _VALID_URL = r'https?://(?:www\.)?(?P<domain>%s)(?P<path>(?:/(?:films/title|show|webseries|(?:news/)?videos?|watch))?/(?P<id>[^?#]+))' % ViewLiftBaseIE._DOMAINS_REGEX
+    _VALID_URL = r'https?://(?:www\.)?(?P<domain>%s)(?P<path>(?:/(?:films/title|show|(?:news|webseries/)?videos?|watch))?/(?P<id>[^?#]+))' % ViewLiftBaseIE._DOMAINS_REGEX
     _TESTS = [{
         'url': 'http://www.snagfilms.com/films/title/lost_for_life',
         'md5': '19844f897b35af219773fd63bdec2942',
@@ -238,7 +238,7 @@ class ViewLiftIE(ViewLiftBaseIE):
         'url': 'https://www.marquee.tv/watch/sadlerswells-sacredmonsters',
         'only_matching': True,
     }, {  # Free film with langauge code
-        'url': 'https://www.hoichoi.tv/films/title/shuyopoka',
+        'url': 'https://www.hoichoi.tv/bn/films/title/shuyopoka',
         'info_dict': {
             'id': '7a7a9d33-1f4c-4771-9173-ee4fb6dbf196',
             'ext': 'mp4',
