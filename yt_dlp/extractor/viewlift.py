@@ -168,7 +168,7 @@ class ViewLiftEmbedIE(ViewLiftBaseIE):
 class ViewLiftIE(ViewLiftBaseIE):
     IE_NAME = 'viewlift'
     _API_BASE = 'https://prod-api-cached-2.viewlift.com/'
-    _VALID_URL = r'https?://(?:www\.)?(?P<domain>%s)(?P<path>(?:/(?:films/title|show|(?:news|webseries/)?videos?|watch))?/(?P<id>[^?#]+))' % ViewLiftBaseIE._DOMAINS_REGEX
+    _VALID_URL = r'https?://(?:www\.)?(?P<domain>%s)(?P<path>(?:/(?:films/title|show|webseries|(?:news/)?videos?|watch))?/(?P<id>[^?#]+))' % ViewLiftBaseIE._DOMAINS_REGEX
     _TESTS = [{
         'url': 'http://www.snagfilms.com/films/title/lost_for_life',
         'md5': '19844f897b35af219773fd63bdec2942',
