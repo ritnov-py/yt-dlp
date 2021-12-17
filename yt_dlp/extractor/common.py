@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import base64
 import collections
-import datetime
 import hashlib
 import itertools
 import json
@@ -1452,8 +1451,13 @@ class InfoExtractor(object):
             })
             extract_interaction_statistic(e)
 
-        for e in json_ld:
-            if '@context' in e:
+        def traverse_json_ld(json_ld, at_top_level=True):
+            for e in json_ld:
+                if at_top_level and '@context' not in e:
+                    continue
+                if at_top_level and set(e.keys()) == {'@context', '@graph'}:
+                    traverse_json_ld(variadic(e['@graph'], allowed_types=(dict,)), at_top_level=False)
+                    break
                 item_type = e.get('@type')
                 if expected_type is not None and expected_type != item_type:
                     continue
@@ -1489,7 +1493,7 @@ class InfoExtractor(object):
                     info.update({
                         'timestamp': parse_iso8601(e.get('datePublished')),
                         'title': unescapeHTML(e.get('headline')),
-                        'description': unescapeHTML(e.get('articleBody')),
+                        'description': unescapeHTML(e.get('articleBody') or e.get('description')),
                     })
                 elif item_type == 'VideoObject':
                     extract_video_object(e)
@@ -1504,6 +1508,8 @@ class InfoExtractor(object):
                     continue
                 else:
                     break
+        traverse_json_ld(json_ld)
+
         return dict((k, v) for k, v in info.items() if v is not None)
 
     def _search_nextjs_data(self, webpage, video_id, **kw):
@@ -3456,10 +3462,8 @@ class InfoExtractor(object):
         return formats
 
     def _live_title(self, name):
-        """ Generate the title for a live video """
-        now = datetime.datetime.now()
-        now_str = now.strftime('%Y-%m-%d %H:%M')
-        return name + ' ' + now_str
+        self._downloader.deprecation_warning('yt_dlp.InfoExtractor._live_title is deprecated and does not work as expected')
+        return name
 
     def _int(self, v, name, fatal=False, **kwargs):
         res = int_or_none(v, **kwargs)
