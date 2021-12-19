@@ -15,13 +15,12 @@ from ..utils import (
 
 class ViewLiftBaseIE(InfoExtractor):
     _API_BASE = 'https://prod-api.viewlift.com/'
-    _DOMAINS_REGEX = r'(?:(?:main\.)?snagfilms|snagxtreme|funnyforfree|kiddovid|chorki|winnersview|(?:monumental|lax)sportsnetwork|vayafilm|failarmy|ftfnext|lnppass\.legapallacanestro|moviespree|app\.myoutdoortv|neoufitness|pflmma|theidentitytb)\.com|(?:hoichoi|app\.horseandcountry|kronon|marquee|supercrosslive)\.tv|(?:aha|baall)\.video'
+    _DOMAINS_REGEX = r'(?:(?:main\.)?snagfilms|snagxtreme|funnyforfree|kiddovid|chorki|winnersview|(?:monumental|lax)sportsnetwork|vayafilm|failarmy|ftfnext|lnppass\.legapallacanestro|moviespree|app\.myoutdoortv|neoufitness|pflmma|theidentitytb)\.com|(?:hoichoi|app\.horseandcountry|kronon|marquee|supercrosslive)\.tv'
     _SITE_MAP = {
         'ftfnext': 'lax',
         'funnyforfree': 'snagfilms',
         'hoichoi': 'hoichoitv',
         'chorki' : 'prothomalo',
-        'aha' : 'aha-tv',
         'kiddovid': 'snagfilms',
         'laxsportsnetwork': 'lax',
         'legapallacanestro': 'lnp',
@@ -168,7 +167,7 @@ class ViewLiftEmbedIE(ViewLiftBaseIE):
 class ViewLiftIE(ViewLiftBaseIE):
     IE_NAME = 'viewlift'
     _API_BASE = 'https://prod-api-cached-2.viewlift.com/'
-    _VALID_URL = r'https?://(?:www\.)?(?P<domain>%s)(?P<path>(?:/(?:films/title|show|(?:news|webseries/)?videos?|watch))?/(?P<id>[^?#]+))' % ViewLiftBaseIE._DOMAINS_REGEX
+    _VALID_URL = r'https?://(?:www\.)?(?P<domain>%s)(?P<path>(?:/(?:films/title|show|(?:news/)?videos?|watch))?/(?P<id>[^?#]+))' % ViewLiftBaseIE._DOMAINS_REGEX
     _TESTS = [{
         'url': 'http://www.snagfilms.com/films/title/lost_for_life',
         'md5': '19844f897b35af219773fd63bdec2942',
