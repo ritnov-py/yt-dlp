@@ -69,11 +69,13 @@ from .spankwire import SpankwireIE
 from .sportbox import SportBoxIE
 from .spotify import SpotifyBaseIE
 from .springboardplatform import SpringboardPlatformIE
+from .substack import SubstackIE
 from .svt import SVTIE
 from .teachable import TeachableIE
 from .ted import TedEmbedIE
 from .theplatform import ThePlatformIE
 from .threeqsdn import ThreeQSDNIE
+from .tiktok import TikTokIE
 from .tnaflix import TNAFlixNetworkEmbedIE
 from .tube8 import Tube8IE
 from .tunein import TuneInBaseIE
@@ -129,6 +131,7 @@ from ..utils import (
     sanitized_Request,
     smuggle_url,
     str_or_none,
+    try_call,
     unescapeHTML,
     unified_timestamp,
     unsmuggle_url,
@@ -2526,6 +2529,118 @@ class GenericIE(InfoExtractor):
                 'upload_date': '20220504',
             },
         },
+        {
+            # Webpage contains double BOM
+            'url': 'https://www.filmarkivet.se/movies/paris-d-moll/',
+            'md5': 'df02cadc719dcc63d43288366f037754',
+            'info_dict': {
+                'id': 'paris-d-moll',
+                'ext': 'mp4',
+                'upload_date': '20220518',
+                'title': 'Paris d-moll',
+                'description': 'md5:319e37ea5542293db37e1e13072fe330',
+                'thumbnail': 'https://www.filmarkivet.se/wp-content/uploads/parisdmoll2.jpg',
+                'timestamp': 1652833414,
+                'age_limit': 0,
+            }
+        },
+        {
+            'url': 'https://www.mollymovieclub.com/p/interstellar?s=r#details',
+            'md5': '198bde8bed23d0b23c70725c83c9b6d9',
+            'info_dict': {
+                'id': '53602801',
+                'ext': 'mpga',
+                'title': 'Interstellar',
+                'description': 'Listen now | Episode One',
+                'thumbnail': 'md5:c30d9c83f738e16d8551d7219d321538',
+                'uploader': 'Molly Movie Club',
+                'uploader_id': '839621',
+            },
+        },
+        {
+            'url': 'https://www.blockedandreported.org/p/episode-117-lets-talk-about-depp?s=r',
+            'md5': 'c0cc44ee7415daeed13c26e5b56d6aa0',
+            'info_dict': {
+                'id': '57962052',
+                'ext': 'mpga',
+                'title': 'md5:855b2756f0ee10f6723fa00b16266f8d',
+                'description': 'md5:fe512a5e94136ad260c80bde00ea4eef',
+                'thumbnail': 'md5:2218f27dfe517bb5ac16c47d0aebac59',
+                'uploader': 'Blocked and Reported',
+                'uploader_id': '500230',
+            },
+        },
+        {
+            'url': 'https://www.skimag.com/video/ski-people-1980/',
+            'info_dict': {
+                'id': 'ski-people-1980',
+                'title': 'Ski People (1980)',
+            },
+            'playlist_count': 1,
+            'playlist': [{
+                'md5': '022a7e31c70620ebec18deeab376ee03',
+                'info_dict': {
+                    'id': 'YTmgRiNU',
+                    'ext': 'mp4',
+                    'title': '1980 Ski People',
+                    'timestamp': 1610407738,
+                    'description': 'md5:cf9c3d101452c91e141f292b19fe4843',
+                    'thumbnail': 'https://cdn.jwplayer.com/v2/media/YTmgRiNU/poster.jpg?width=720',
+                    'duration': 5688.0,
+                    'upload_date': '20210111',
+                }
+            }]
+        },
+        {
+            'note': 'Rumble embed',
+            'url': 'https://rumble.com/vdmum1-moose-the-dog-helps-girls-dig-a-snow-fort.html',
+            'md5': '53af34098a7f92c4e51cf0bd1c33f009',
+            'info_dict': {
+                'id': 'vb0ofn',
+                'ext': 'mp4',
+                'timestamp': 1612662578,
+                'uploader': 'LovingMontana',
+                'channel': 'LovingMontana',
+                'upload_date': '20210207',
+                'title': 'Winter-loving dog helps girls dig a snow fort ',
+                'channel_url': 'https://rumble.com/c/c-546523',
+                'thumbnail': 'https://sp.rmbl.ws/s8/1/5/f/x/x/5fxxb.OvCc.1-small-Moose-The-Dog-Helps-Girls-D.jpg',
+                'duration': 103,
+            }
+        },
+        {
+            'note': 'Rumble JS embed',
+            'url': 'https://therightscoop.com/what-does-9-plus-1-plus-1-equal-listen-to-this-audio-of-attempted-kavanaugh-assassins-call-and-youll-get-it',
+            'md5': '4701209ac99095592e73dbba21889690',
+            'info_dict': {
+                'id': 'v15eqxl',
+                'ext': 'mp4',
+                'channel': 'Mr Producer Media',
+                'duration': 92,
+                'title': '911 Audio From The Man Who Wanted To Kill Supreme Court Justice Kavanaugh',
+                'channel_url': 'https://rumble.com/c/RichSementa',
+                'thumbnail': 'https://sp.rmbl.ws/s8/1/P/j/f/A/PjfAe.OvCc-small-911-Audio-From-The-Man-Who-.jpg',
+                'timestamp': 1654892716,
+                'uploader': 'Mr Producer Media',
+                'upload_date': '20220610',
+            }
+        },
+        {
+            'note': 'JSON LD with multiple @type',
+            'url': 'https://www.nu.nl/280161/video/hoe-een-bladvlo-dit-verwoestende-japanse-onkruid-moet-vernietigen.html',
+            'md5': 'c7949f34f57273013fb7ccb1156393db',
+            'info_dict': {
+                'id': 'ipy2AcGL',
+                'ext': 'mp4',
+                'description': 'md5:6a9d644bab0dc2dc06849c2505d8383d',
+                'thumbnail': r're:https://media\.nu\.nl/m/.+\.jpg',
+                'title': 'Hoe een bladvlo dit verwoestende Japanse onkruid moet vernietigen',
+                'timestamp': 1586577474,
+                'upload_date': '20200411',
+                'age_limit': 0,
+                'duration': 111.0,
+            }
+        },
     ]
 
     def report_following_redirect(self, new_url):
@@ -2536,66 +2651,44 @@ class GenericIE(InfoExtractor):
         self._downloader.write_debug(f'Identified a {name}')
 
     def _extract_rss(self, url, video_id, doc):
-        playlist_title = doc.find('./channel/title').text
-        playlist_desc_el = doc.find('./channel/description')
-        playlist_desc = None if playlist_desc_el is None else playlist_desc_el.text
-
         NS_MAP = {
             'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
         }
 
         entries = []
         for it in doc.findall('./channel/item'):
-            next_url = None
-            enclosure_nodes = it.findall('./enclosure')
-            for e in enclosure_nodes:
-                next_url = e.attrib.get('url')
-                if next_url:
-                    break
-
-            if not next_url:
-                next_url = xpath_text(it, 'link', fatal=False)
-
+            next_url = next(
+                (e.attrib.get('url') for e in it.findall('./enclosure')),
+                xpath_text(it, 'link', fatal=False))
             if not next_url:
                 continue
 
-            if it.find('guid').text is not None:
-                next_url = smuggle_url(next_url, {'force_videoid': it.find('guid').text})
+            guid = try_call(lambda: it.find('guid').text)
+            if guid:
+                next_url = smuggle_url(next_url, {'force_videoid': guid})
 
             def itunes(key):
-                return xpath_text(
-                    it, xpath_with_ns('./itunes:%s' % key, NS_MAP),
-                    default=None)
-
-            duration = itunes('duration')
-            explicit = (itunes('explicit') or '').lower()
-            if explicit in ('true', 'yes'):
-                age_limit = 18
-            elif explicit in ('false', 'no'):
-                age_limit = 0
-            else:
-                age_limit = None
+                return xpath_text(it, xpath_with_ns(f'./itunes:{key}', NS_MAP), default=None)
 
             entries.append({
                 '_type': 'url_transparent',
                 'url': next_url,
-                'title': it.find('title').text,
+                'title': try_call(lambda: it.find('title').text),
                 'description': xpath_text(it, 'description', default=None),
-                'timestamp': unified_timestamp(
-                    xpath_text(it, 'pubDate', default=None)),
-                'duration': int_or_none(duration) or parse_duration(duration),
+                'timestamp': unified_timestamp(xpath_text(it, 'pubDate', default=None)),
+                'duration': parse_duration(itunes('duration')),
                 'thumbnail': url_or_none(xpath_attr(it, xpath_with_ns('./itunes:image', NS_MAP), 'href')),
                 'episode': itunes('title'),
                 'episode_number': int_or_none(itunes('episode')),
                 'season_number': int_or_none(itunes('season')),
-                'age_limit': age_limit,
+                'age_limit': {'true': 18, 'yes': 18, 'false': 0, 'no': 0}.get((itunes('explicit') or '').lower()),
             })
 
         return {
             '_type': 'playlist',
             'id': url,
-            'title': playlist_title,
-            'description': playlist_desc,
+            'title': try_call(lambda: doc.find('./channel/title').text),
+            'description': try_call(lambda: doc.find('./channel/description').text),
             'entries': entries,
         }
 
@@ -2975,7 +3068,7 @@ class GenericIE(InfoExtractor):
         if vimeo_urls:
             return self.playlist_from_matches(vimeo_urls, video_id, video_title, ie=VimeoIE.ie_key())
 
-        vhx_url = VHXEmbedIE._extract_url(webpage)
+        vhx_url = VHXEmbedIE._extract_url(url, webpage)
         if vhx_url:
             return self.url_result(vhx_url, VHXEmbedIE.ie_key())
 
@@ -3023,6 +3116,7 @@ class GenericIE(InfoExtractor):
         wistia_urls = WistiaIE._extract_urls(webpage)
         if wistia_urls:
             playlist = self.playlist_from_matches(wistia_urls, video_id, video_title, ie=WistiaIE.ie_key())
+            playlist['entries'] = list(playlist['entries'])
             for entry in playlist['entries']:
                 entry.update({
                     '_type': 'url_transparent',
@@ -3041,6 +3135,11 @@ class GenericIE(InfoExtractor):
             burl = unescapeHTML(mobj.group(1))
             # Don't set the extractor because it can be a track url or an album
             return self.url_result(burl)
+
+        # Check for Substack custom domains
+        substack_url = SubstackIE._extract_url(webpage, url)
+        if substack_url:
+            return self.url_result(substack_url, SubstackIE)
 
         # Look for embedded Vevo player
         mobj = re.search(
@@ -3762,6 +3861,11 @@ class GenericIE(InfoExtractor):
         if ruutu_urls:
             return self.playlist_from_matches(ruutu_urls, video_id, video_title)
 
+        # Look for Tiktok embeds
+        tiktok_urls = TikTokIE._extract_urls(webpage)
+        if tiktok_urls:
+            return self.playlist_from_matches(tiktok_urls, video_id, video_title)
+
         # Look for HTML5 media
         entries = self._parse_html5_media_entries(url, webpage, video_id, m3u8_id='hls')
         if entries:
@@ -3871,15 +3975,10 @@ class GenericIE(InfoExtractor):
         json_ld = self._search_json_ld(webpage, video_id, default={})
         if json_ld.get('url') not in (url, None):
             self.report_detected('JSON LD')
-            if determine_ext(json_ld['url']) == 'm3u8':
-                json_ld['formats'], json_ld['subtitles'] = self._extract_m3u8_formats_and_subtitles(
-                    json_ld['url'], video_id, 'mp4')
-                json_ld.pop('url')
-                self._sort_formats(json_ld['formats'])
-            else:
-                json_ld['_type'] = 'url_transparent'
-                json_ld['url'] = smuggle_url(json_ld['url'], {'force_videoid': video_id, 'to_generic': True})
-            return merge_dicts(json_ld, info_dict)
+            return merge_dicts({
+                '_type': 'url_transparent',
+                'url': smuggle_url(json_ld['url'], {'force_videoid': video_id, 'to_generic': True}),
+            }, json_ld, info_dict)
 
         def check_video(vurl):
             if YoutubeIE.suitable(vurl):
@@ -4106,7 +4205,7 @@ class GenericIE(InfoExtractor):
             entries.append(entry_info_dict)
 
         if len(entries) == 1:
-            return entries[0]
+            return merge_dicts(entries[0], info_dict)
         else:
             for num, e in enumerate(entries, start=1):
                 # 'url' results don't have a title

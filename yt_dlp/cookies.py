@@ -63,7 +63,7 @@ class YDLLogger:
         # Do not print to files/pipes, loggers, or when --no-progress is used
         if not self._ydl or self._ydl.params.get('noprogress') or self._ydl.params.get('logger'):
             return
-        file = self._ydl._out_files['error']
+        file = self._ydl._out_files.error
         try:
             if not file.isatty():
                 return
@@ -156,30 +156,16 @@ def _extract_firefox_cookies(profile, logger):
 
 
 def _firefox_browser_dir():
-    if sys.platform in ('linux', 'linux2'):
-        return os.path.expanduser('~/.mozilla/firefox')
-    elif sys.platform == 'win32':
+    if sys.platform in ('cygwin', 'win32'):
         return os.path.expandvars(R'%APPDATA%\Mozilla\Firefox\Profiles')
     elif sys.platform == 'darwin':
         return os.path.expanduser('~/Library/Application Support/Firefox')
-    else:
-        raise ValueError(f'unsupported platform: {sys.platform}')
+    return os.path.expanduser('~/.mozilla/firefox')
 
 
 def _get_chromium_based_browser_settings(browser_name):
     # https://chromium.googlesource.com/chromium/src/+/HEAD/docs/user_data_dir.md
-    if sys.platform in ('linux', 'linux2'):
-        config = _config_home()
-        browser_dir = {
-            'brave': os.path.join(config, 'BraveSoftware/Brave-Browser'),
-            'chrome': os.path.join(config, 'google-chrome'),
-            'chromium': os.path.join(config, 'chromium'),
-            'edge': os.path.join(config, 'microsoft-edge'),
-            'opera': os.path.join(config, 'opera'),
-            'vivaldi': os.path.join(config, 'vivaldi'),
-        }[browser_name]
-
-    elif sys.platform == 'win32':
+    if sys.platform in ('cygwin', 'win32'):
         appdata_local = os.path.expandvars('%LOCALAPPDATA%')
         appdata_roaming = os.path.expandvars('%APPDATA%')
         browser_dir = {
@@ -203,7 +189,15 @@ def _get_chromium_based_browser_settings(browser_name):
         }[browser_name]
 
     else:
-        raise ValueError(f'unsupported platform: {sys.platform}')
+        config = _config_home()
+        browser_dir = {
+            'brave': os.path.join(config, 'BraveSoftware/Brave-Browser'),
+            'chrome': os.path.join(config, 'google-chrome'),
+            'chromium': os.path.join(config, 'chromium'),
+            'edge': os.path.join(config, 'microsoft-edge'),
+            'opera': os.path.join(config, 'opera'),
+            'vivaldi': os.path.join(config, 'vivaldi'),
+        }[browser_name]
 
     # Linux keyring names can be determined by snooping on dbus while opening the browser in KDE:
     # dbus-monitor "interface='org.kde.KWallet'" "type=method_return"
@@ -282,7 +276,7 @@ def _extract_chrome_cookies(browser_name, profile, keyring, logger):
             else:
                 failed_message = ''
             logger.info(f'Extracted {len(jar)} cookies from {browser_name}{failed_message}')
-            counts = decryptor.cookie_counts.copy()
+            counts = decryptor._cookie_counts.copy()
             counts['unencrypted'] = unencrypted_cookies
             logger.debug(f'cookie version breakdown: {counts}')
             return jar
@@ -336,23 +330,18 @@ class ChromeCookieDecryptor:
         - KeyStorageLinux::CreateService
     """
 
-    def decrypt(self, encrypted_value):
-        raise NotImplementedError('Must be implemented by sub classes')
+    _cookie_counts = {}
 
-    @property
-    def cookie_counts(self):
+    def decrypt(self, encrypted_value):
         raise NotImplementedError('Must be implemented by sub classes')
 
 
 def get_cookie_decryptor(browser_root, browser_keyring_name, logger, *, keyring=None):
-    if sys.platform in ('linux', 'linux2'):
-        return LinuxChromeCookieDecryptor(browser_keyring_name, logger, keyring=keyring)
-    elif sys.platform == 'darwin':
+    if sys.platform == 'darwin':
         return MacChromeCookieDecryptor(browser_keyring_name, logger)
-    elif sys.platform == 'win32':
+    elif sys.platform in ('win32', 'cygwin'):
         return WindowsChromeCookieDecryptor(browser_root, logger)
-    else:
-        raise NotImplementedError(f'Chrome cookie decryption is not supported on this platform: {sys.platform}')
+    return LinuxChromeCookieDecryptor(browser_keyring_name, logger, keyring=keyring)
 
 
 class LinuxChromeCookieDecryptor(ChromeCookieDecryptor):
@@ -368,10 +357,6 @@ class LinuxChromeCookieDecryptor(ChromeCookieDecryptor):
         # values from
         # https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/os_crypt/os_crypt_linux.cc
         return pbkdf2_sha1(password, salt=b'saltysalt', iterations=1, key_length=16)
-
-    @property
-    def cookie_counts(self):
-        return self._cookie_counts
 
     def decrypt(self, encrypted_value):
         version = encrypted_value[:3]
@@ -406,10 +391,6 @@ class MacChromeCookieDecryptor(ChromeCookieDecryptor):
         # https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/os_crypt/os_crypt_mac.mm
         return pbkdf2_sha1(password, salt=b'saltysalt', iterations=1003, key_length=16)
 
-    @property
-    def cookie_counts(self):
-        return self._cookie_counts
-
     def decrypt(self, encrypted_value):
         version = encrypted_value[:3]
         ciphertext = encrypted_value[3:]
@@ -434,10 +415,6 @@ class WindowsChromeCookieDecryptor(ChromeCookieDecryptor):
         self._logger = logger
         self._v10_key = _get_windows_v10_key(browser_root, logger)
         self._cookie_counts = {'v10': 0, 'other': 0}
-
-    @property
-    def cookie_counts(self):
-        return self._cookie_counts
 
     def decrypt(self, encrypted_value):
         version = encrypted_value[:3]
@@ -732,21 +709,19 @@ def _get_kwallet_network_wallet(logger):
     """
     default_wallet = 'kdewallet'
     try:
-        proc = Popen([
+        stdout, _, returncode = Popen.run([
             'dbus-send', '--session', '--print-reply=literal',
             '--dest=org.kde.kwalletd5',
             '/modules/kwalletd5',
             'org.kde.KWallet.networkWallet'
-        ], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        ], text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
-        stdout, stderr = proc.communicate_or_kill()
-        if proc.returncode != 0:
+        if returncode:
             logger.warning('failed to read NetworkWallet')
             return default_wallet
         else:
-            network_wallet = stdout.decode().strip()
-            logger.debug(f'NetworkWallet = "{network_wallet}"')
-            return network_wallet
+            logger.debug(f'NetworkWallet = "{stdout.strip()}"')
+            return stdout.strip()
     except Exception as e:
         logger.warning(f'exception while obtaining NetworkWallet: {e}')
         return default_wallet
@@ -764,17 +739,16 @@ def _get_kwallet_password(browser_keyring_name, logger):
     network_wallet = _get_kwallet_network_wallet(logger)
 
     try:
-        proc = Popen([
+        stdout, _, returncode = Popen.run([
             'kwallet-query',
             '--read-password', f'{browser_keyring_name} Safe Storage',
             '--folder', f'{browser_keyring_name} Keys',
             network_wallet
         ], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
-        stdout, stderr = proc.communicate_or_kill()
-        if proc.returncode != 0:
-            logger.error(f'kwallet-query failed with return code {proc.returncode}. Please consult '
-                         'the kwallet-query man page for details')
+        if returncode:
+            logger.error(f'kwallet-query failed with return code {returncode}. '
+                         'Please consult the kwallet-query man page for details')
             return b''
         else:
             if stdout.lower().startswith(b'failed to read'):
@@ -789,9 +763,7 @@ def _get_kwallet_password(browser_keyring_name, logger):
                 return b''
             else:
                 logger.debug('password found')
-                if stdout[-1:] == b'\n':
-                    stdout = stdout[:-1]
-                return stdout
+                return stdout.rstrip(b'\n')
     except Exception as e:
         logger.warning(f'exception running kwallet-query: {error_to_str(e)}')
         return b''
@@ -838,17 +810,13 @@ def _get_linux_keyring_password(browser_keyring_name, keyring, logger):
 def _get_mac_keyring_password(browser_keyring_name, logger):
     logger.debug('using find-generic-password to obtain password from OSX keychain')
     try:
-        proc = Popen(
+        stdout, _, _ = Popen.run(
             ['security', 'find-generic-password',
              '-w',  # write password to stdout
              '-a', browser_keyring_name,  # match 'account'
              '-s', f'{browser_keyring_name} Safe Storage'],  # match 'service'
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-
-        stdout, stderr = proc.communicate_or_kill()
-        if stdout[-1:] == b'\n':
-            stdout = stdout[:-1]
-        return stdout
+        return stdout.rstrip(b'\n')
     except Exception as e:
         logger.warning(f'exception running find-generic-password: {error_to_str(e)}')
         return None
